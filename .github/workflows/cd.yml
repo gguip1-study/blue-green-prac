@@ -1,13 +1,10 @@
 name: Express Blue/Green CD
 
 on:
-  push:
-    branches:
-      - main
-    # workflow_run:
-    #   workflows: ["Express Blue/Green CI"]
-    #   types:
-    #     - completed
+  workflow_run:
+    workflows: ["Express Blue/Green CI"]
+    types:
+      - completed
     paths-ignore:
       - "docs/**"
       - "**.md"
