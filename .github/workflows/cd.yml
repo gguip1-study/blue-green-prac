@@ -48,7 +48,7 @@ jobs:
             if [ "\$TARGET" == "blue" ]; then
               PORT=3001
             elif [ "\$TARGET" == "green" ]; then
-              PORT=3000
+              PORT=3002
             else
               echo "Unknown target color: \$TARGET"
               exit 1
