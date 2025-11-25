@@ -82,7 +82,7 @@ jobs:
           fi
 
           echo "Switching Nginx to \$TARGET"
-          sed -i "s/express-healthcheck-[a-z]\\+express-healthcheck-\$TARGET/g" nginx.conf
+          sed -i "s/express-healthcheck-[a-z]\\+/express-healthcheck-\$TARGET/g" nginx.conf
           docker stop nginx-proxy || true
           docker rm -f nginx-proxy || true
           docker compose up -d nginx-proxy
