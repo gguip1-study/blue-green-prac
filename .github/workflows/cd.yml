@@ -44,9 +44,19 @@ jobs:
 
           if [ "\$STOP" != "none" ]; then
             echo "Running health check..."
+
+            if [ "$TARGET" == "blue" ]; then
+              PORT=3001
+            elif [ "$TARGET" == "green" ]; then
+              PORT=3000
+            else
+              echo "Unknown target color: \$TARGET"
+              exit 1
+            fi
+
             for i in {1..10}; do
               sleep 2
-              if docker exec express-healthcheck-\$TARGET curl -s http://localhost:3000/health; then
+              if curl --fail -s http://localhost:\$PORT/health; then
                 echo "Health check passed"
               elif [ \$i -eq 10 ]; then
                 echo "Health check failed. Rolling back..."
