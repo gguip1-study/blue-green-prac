@@ -61,6 +61,16 @@
 
   ![Multi-Staging](./docs/assets/images/problem-5/multi-staging.png)
 
+## 🚧 문제 상황6
+
+- Docker Hub -> AWS ECR Private Repository로 변경 중 Github Actions 워크플로우에서 인증 문제 발생
+- Github Actions에서 SSH 접속 시 'ubuntu' 유저로 접속하도록 설정되어 있어, ecr-credential-helper가 정상 동작하지 않는 문제 발생
+
+## 🛠️ 해결 방법6
+
+- 'ubuntu' 유저에 /docker/config.json 파일 생성
+- ecr-credential-helper가 정상 동작하도록 설정
+
 ## 📄 GitHub Actions 워크플로우 추가 수정 사항
 
 - `paths-ignore` 옵션을 사용하여 `./docs/**`, `**.md` 경로의 파일 변경 시 워크플로우가 실행되지 않도록 설정했습니다.
