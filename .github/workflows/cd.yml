@@ -36,10 +36,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Deploy to EC2
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
-          IMAGE_TAG: latest
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<EOF
           set -e
@@ -57,9 +53,7 @@ jobs:
           fi
 
           echo "Deploying to: \$TARGET"
-
-          docker compose pull \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG
-          docker tag \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG express-healthcheck-\$TARGET
+          docker compose pull express-healthcheck-\$TARGET
           docker compose up -d express-healthcheck-\$TARGET
 
           if [ "\$STOP" != "none" ]; then
@@ -99,62 +93,3 @@ jobs:
             docker stop \$STOP || true
           fi
           EOF
-
-      # - name: Deploy to EC2
-      #   run: |
-      #     ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<EOF
-      #     set -e
-      #     cd /home/${{ secrets.SERVER_USER }}/bluegreen
-
-      #     if docker ps | grep express-healthcheck-blue; then
-      #       TARGET=green
-      #       STOP=express-healthcheck-blue
-      #     elif docker ps | grep express-healthcheck-green; then
-      #       TARGET=blue
-      #       STOP=express-healthcheck-green
-      #     else
-      #       TARGET=blue
-      #       STOP=
-      #     fi
-
-      #     echo "Deploying to: \$TARGET"
-      #     docker compose pull express-healthcheck-\$TARGET
-      #     docker compose up -d express-healthcheck-\$TARGET
-
-      #     if [ "\$STOP" != "none" ]; then
-      #       echo "Running health check..."
-
-      #       if [ "\$TARGET" == "blue" ]; then
-      #         PORT=3001
-      #       elif [ "\$TARGET" == "green" ]; then
-      #         PORT=3002
-      #       else
-      #         echo "Unknown target color: \$TARGET"
-      #         exit 1
-      #       fi
-
-      #       for i in {1..10}; do
-      #         sleep 2
-      #         if curl --fail -s http://localhost:\$PORT/health; then
-      #           echo "Health check passed"
-      #         elif [ \$i -eq 10 ]; then
-      #           echo "Health check failed. Rolling back..."
-      #           docker stop express-healthcheck-\$TARGET
-      #           docker compose restart \$STOP
-      #           exit 1
-      #         fi
-      #       done
-      #     else
-      #       echo "First deploy - skipping health check"
-      #     fi
-
-      #     echo "Switching Nginx to \$TARGET"
-      #     sed -i "s/express-healthcheck-[a-z]\\+/express-healthcheck-\$TARGET/g" nginx.conf
-      #     docker stop nginx-proxy || true
-      #     docker rm -f nginx-proxy || true
-      #     docker compose up -d nginx-proxy
-
-      #     if [ "\$STOP" != "none" ]; then
-      #       docker stop \$STOP || true
-      #     fi
-      #     EOF
