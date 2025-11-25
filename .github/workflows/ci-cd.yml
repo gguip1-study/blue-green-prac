@@ -24,63 +24,63 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/express-healthcheck:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/express-healthcheck:latest
 
-    deploy:
-      needs: build-and-push
-      runs-on: ubuntu-latest
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Set up SSH
-          run: |
-            mkdir -p ~/.ssh
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-            ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-        - name: Deploy to EC2
-          run: |
-            ssh -i ~/.ssh/id_rsa {{ secrets.SERVER_USER }}@${{ secrests.SERVER_HOST }} 'bash -s' <<EOF
-            set -e
-            cd /home/${{ secrets.SERVER_USER }}/bluegreen
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa {{ secrets.SERVER_USER }}@${{ secrests.SERVER_HOST }} 'bash -s' <<EOF
+          set -e
+          cd /home/${{ secrets.SERVER_USER }}/bluegreen
 
-            if docker ps | grep express-healthcheck-blue; then
-              TARGET=green
-              STOP=express-healthcheck-blue
-            elif docker ps | grep express-healthcheck-green; then
-              TARGET=blue
-              STOP=express-healthcheck-green
-            else
-              TARGET=blue
-              STOP=
-            fi
+          if docker ps | grep express-healthcheck-blue; then
+            TARGET=green
+            STOP=express-healthcheck-blue
+          elif docker ps | grep express-healthcheck-green; then
+            TARGET=blue
+            STOP=express-healthcheck-green
+          else
+            TARGET=blue
+            STOP=
+          fi
 
-            echo "Deploying to: \$TARGET"
-            docker compose pull express-healthcheck-\$TARGET
-            docker compose up -d express-healthcheck-\$TARGET
+          echo "Deploying to: \$TARGET"
+          docker compose pull express-healthcheck-\$TARGET
+          docker compose up -d express-healthcheck-\$TARGET
 
-            if [ "\$STOP" != "none" ]; then
-              echo "Running health check..."
-              for i in {1..10}; do
-                sleep 2
-                if docker exec express-healthcheck-\$TARGET curl -s http://localhost:3000/health; then
-                  echo "Health check passed"
-                elif [ \$i -eq 10 ]; then
-                  echo "Health check failed. Rolling back..."
-                  docker stop express-healthcheck-\$TARGET
-                  docker compose restart \$STOP
-                  exit 1
-                fi
-              done
-            else
-              echo "First deploy - skipping health check"
-            fi
+          if [ "\$STOP" != "none" ]; then
+            echo "Running health check..."
+            for i in {1..10}; do
+              sleep 2
+              if docker exec express-healthcheck-\$TARGET curl -s http://localhost:3000/health; then
+                echo "Health check passed"
+              elif [ \$i -eq 10 ]; then
+                echo "Health check failed. Rolling back..."
+                docker stop express-healthcheck-\$TARGET
+                docker compose restart \$STOP
+                exit 1
+              fi
+            done
+          else
+            echo "First deploy - skipping health check"
+          fi
 
-            echo "Switching Nginx to \$TARGET"
-            sed -i "s/express-healthcheck-[a-z]\\+express-healthcheck-\$TARGET/g" nginx.conf
-            docker stop nginx-proxy || true
-            docker rm -f nginx-proxy || true
-            docker compose up -d nginx-proxy
+          echo "Switching Nginx to \$TARGET"
+          sed -i "s/express-healthcheck-[a-z]\\+express-healthcheck-\$TARGET/g" nginx.conf
+          docker stop nginx-proxy || true
+          docker rm -f nginx-proxy || true
+          docker compose up -d nginx-proxy
 
-            if [ "\$STOP" != "none" ]; then
-              docker stop \$STOP || true
-            fi
-            EOF
+          if [ "\$STOP" != "none" ]; then
+            docker stop \$STOP || true
+          fi
+          EOF
