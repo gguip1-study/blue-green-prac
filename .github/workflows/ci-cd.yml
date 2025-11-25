@@ -26,10 +26,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      # buildx 사용시 --push 옵션으로 빌드 후 바로 푸시
       - name: Build and Push Image
         run: |
-          docker buildx build --platform linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/express-healthcheck:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/express-healthcheck:latest
+          docker buildx build --platform linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/express-healthcheck:latest . --push
 
   deploy:
     needs: build-and-push
