@@ -48,6 +48,19 @@
 
   ![After](./docs/assets/images/problem-4/after.png)
 
+## 🚧 문제 상황5
+
+- Docker 이미지 멀티 스테이징 방식 미적용으로 인해 빌드 속도가 느려지고, 이미지 크기가 커지는 문제가 발생합니다.
+
+## 🛠️ 해결 방법5
+
+- Dockerfile을 멀티 스테이징 방식으로 이미지 크기 감소
+- npm install을 builder 스테이지에서만 실행하여 불필요한 파일 생성 방지
+- Docker Image 235MB -> 232MB
+  ![Multi-Staging Build Image](./docs/assets/images/problem-5/multi-staging-bulid-image.png)
+
+  ![Multi-Staging](./docs/assets/images/problem-5/multi-staging.png)
+
 ## 📄 GitHub Actions 워크플로우 추가 수정 사항
 
 - `paths-ignore` 옵션을 사용하여 `./docs/**`, `**.md` 경로의 파일 변경 시 워크플로우가 실행되지 않도록 설정했습니다.
