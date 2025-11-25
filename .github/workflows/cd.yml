@@ -45,9 +45,9 @@ jobs:
           if [ "\$STOP" != "none" ]; then
             echo "Running health check..."
 
-            if [ "$TARGET" == "blue" ]; then
+            if [ "\$TARGET" == "blue" ]; then
               PORT=3001
-            elif [ "$TARGET" == "green" ]; then
+            elif [ "\$TARGET" == "green" ]; then
               PORT=3000
             else
               echo "Unknown target color: \$TARGET"
