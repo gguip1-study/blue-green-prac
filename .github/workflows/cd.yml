@@ -28,10 +28,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<EOF
           set -e
-          cd /home/${{ secrets.SERVER_USER }}/bluegreen
 
-          echo "Login to AWS ECR"
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+
+          cd /home/${{ secrets.SERVER_USER }}/bluegreen
 
           if docker ps | grep express-healthcheck-blue; then
             TARGET=green
