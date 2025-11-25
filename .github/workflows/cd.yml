@@ -36,6 +36,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Deploy to EC2
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          IMAGE_TAG: latest
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'bash -s' <<EOF
           set -e
@@ -53,10 +57,6 @@ jobs:
           fi
 
           echo "Deploying to: \$TARGET"
-
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
-          IMAGE_TAG: latest
 
           docker compose pull \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG
           docker tag \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG express-healthcheck-\$TARGET
