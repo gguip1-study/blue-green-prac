@@ -6,6 +6,7 @@ on:
       - main
     path-ignore:
       - "docs/**"
+      - "**.md"
 
 jobs:
   build-and-push:
