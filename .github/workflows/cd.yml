@@ -58,19 +58,19 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
           IMAGE_TAG: latest
 
-          docker compose pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG express-healthcheck-$TARGET
-          docker compose up -d express-healthcheck-$TARGET
+          docker compose pull \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG
+          docker tag \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG express-healthcheck-\$TARGET
+          docker compose up -d express-healthcheck-\$TARGET
 
-          if [ "$STOP" != "none" ]; then
+          if [ "\$STOP" != "none" ]; then
             echo "Running health check..."
 
-            if [ "$TARGET" == "blue" ]; then
+            if [ "\$TARGET" == "blue" ]; then
               PORT=3001
-            elif [ "$TARGET" == "green" ]; then
+            elif [ "\$TARGET" == "green" ]; then
               PORT=3002
             else
-              echo "Unknown target color: $TARGET"
+              echo "Unknown target color: \$TARGET"
               exit 1
             fi
 
@@ -89,14 +89,14 @@ jobs:
             echo "First deploy - skipping health check"
           fi
 
-          echo "Switching Nginx to $TARGET"
-          sed -i "s/express-healthcheck-[a-z]\\+/express-healthcheck-$TARGET/g" nginx.conf
+          echo "Switching Nginx to \$TARGET"
+          sed -i "s/express-healthcheck-[a-z]\\+/express-healthcheck-\$TARGET/g" nginx.conf
           docker stop nginx-proxy || true
           docker rm -f nginx-proxy || true
           docker compose up -d nginx-proxy
 
-          if [ "$STOP" != "none" ]; then
-            docker stop $STOP || true
+          if [ "\$STOP" != "none" ]; then
+            docker stop \$STOP || true
           fi
           EOF
 
